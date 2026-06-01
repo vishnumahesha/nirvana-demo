@@ -11,7 +11,7 @@ export default function LoginPage() {
             <Tv className="w-10 h-10" />
           </div>
           <h1 className="text-2xl font-bold text-white">Sign in to Vidstream</h1>
-          <p className="text-gray-400 text-sm">Enter your email for a magic link</p>
+          <p className="text-gray-400 text-sm">Enter your email to receive a sign-in code</p>
         </div>
         <Suspense fallback={null}>
           <LoginForm />
