@@ -99,15 +99,14 @@ export default async function TVPage({
                   <Play className="w-4 h-4 fill-white" /> Watch Now
                 </Link>
               </Button>
-              {user && (
-                <WatchlistButton
-                  mediaType="tv"
-                  tmdbId={show.id}
-                  title={show.name}
-                  posterPath={show.poster_path}
-                  initialInWatchlist={inWatchlist}
-                />
-              )}
+              <WatchlistButton
+                mediaType="tv"
+                tmdbId={show.id}
+                title={show.name}
+                posterPath={show.poster_path}
+                initialInWatchlist={inWatchlist}
+                hasSession={!!user}
+              />
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { getTVDetails, getTVSeason } from '@/lib/tmdb'
 import Player from '@/components/player/Player'
 import { createClient } from '@/lib/supabase/server'
@@ -14,10 +14,6 @@ export default async function WatchTVPage({
   const sNum = Number(season)
   const eNum = Number(ep)
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect(`/login?next=/watch/tv/${id}/${season}/${ep}`)
-
   let show, seasonData
   try {
     ;[show, seasonData] = await Promise.all([
@@ -29,15 +25,22 @@ export default async function WatchTVPage({
   const episode = seasonData.episodes.find(e => e.episode_number === eNum)
   if (!episode) notFound()
 
-  const { data: prog } = await supabase
-    .from('watch_progress')
-    .select('current_time_s')
-    .eq('user_id', user.id)
-    .eq('media_type', 'tv')
-    .eq('tmdb_id', show.id)
-    .eq('season', sNum)
-    .eq('episode', eNum)
-    .maybeSingle()
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  let startSeconds = 0
+  if (user) {
+    const { data: prog } = await supabase
+      .from('watch_progress')
+      .select('current_time_s')
+      .eq('user_id', user.id)
+      .eq('media_type', 'tv')
+      .eq('tmdb_id', show.id)
+      .eq('season', sNum)
+      .eq('episode', eNum)
+      .maybeSingle()
+    startSeconds = prog?.current_time_s ?? 0
+  }
 
   return (
     <div className="fixed inset-0 bg-black z-50">
@@ -52,7 +55,7 @@ export default async function WatchTVPage({
         tmdbId={show.id}
         season={sNum}
         episode={eNum}
-        startSeconds={prog?.current_time_s ?? 0}
+        startSeconds={startSeconds}
         title={show.name}
         posterPath={show.poster_path}
         backdropPath={show.backdrop_path}

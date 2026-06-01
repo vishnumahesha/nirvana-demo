@@ -79,15 +79,14 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
                   <Play className="w-4 h-4 fill-white" /> Watch Now
                 </Link>
               </Button>
-              {user && (
-                <WatchlistButton
-                  mediaType="movie"
-                  tmdbId={movie.id}
-                  title={movie.title}
-                  posterPath={movie.poster_path}
-                  initialInWatchlist={inWatchlist}
-                />
-              )}
+              <WatchlistButton
+                mediaType="movie"
+                tmdbId={movie.id}
+                title={movie.title}
+                posterPath={movie.poster_path}
+                initialInWatchlist={inWatchlist}
+                hasSession={!!user}
+              />
             </div>
           </div>
         </div>

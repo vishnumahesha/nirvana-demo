@@ -23,15 +23,8 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user && request.nextUrl.pathname.startsWith('/watch')) {
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('next', request.nextUrl.pathname)
-    return NextResponse.redirect(loginUrl)
-  }
+  // Refresh session cookies without gating any routes.
+  await supabase.auth.getUser()
 
   return supabaseResponse
 }

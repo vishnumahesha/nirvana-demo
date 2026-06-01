@@ -12,14 +12,17 @@ type Props = {
   title: string
   posterPath: string | null
   initialInWatchlist: boolean
+  hasSession: boolean
 }
 
 export default function WatchlistButton({
-  mediaType, tmdbId, title, posterPath, initialInWatchlist,
+  mediaType, tmdbId, title, posterPath, initialInWatchlist, hasSession,
 }: Props) {
   const [inWatchlist, setInWatchlist] = useState(initialInWatchlist)
   const [isPending, startTransition] = useTransition()
   const pathname = usePathname()
+
+  if (!hasSession) return null
 
   function handleClick() {
     const prev = inWatchlist

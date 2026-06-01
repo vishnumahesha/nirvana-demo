@@ -1,4 +1,4 @@
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { getMovieDetails } from '@/lib/tmdb'
 import Player from '@/components/player/Player'
 import { createClient } from '@/lib/supabase/server'
@@ -7,21 +7,25 @@ import { ArrowLeft } from 'lucide-react'
 
 export default async function WatchMoviePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect(`/login?next=/watch/movie/${id}`)
 
   let movie
   try { movie = await getMovieDetails(Number(id)) } catch { notFound() }
 
-  const { data: prog } = await supabase
-    .from('watch_progress')
-    .select('current_time_s')
-    .eq('user_id', user.id)
-    .eq('media_type', 'movie')
-    .eq('tmdb_id', movie.id)
-    .is('season', null)
-    .maybeSingle()
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  let startSeconds = 0
+  if (user) {
+    const { data: prog } = await supabase
+      .from('watch_progress')
+      .select('current_time_s')
+      .eq('user_id', user.id)
+      .eq('media_type', 'movie')
+      .eq('tmdb_id', movie.id)
+      .is('season', null)
+      .maybeSingle()
+    startSeconds = prog?.current_time_s ?? 0
+  }
 
   return (
     <div className="fixed inset-0 bg-black z-50">
@@ -34,7 +38,7 @@ export default async function WatchMoviePage({ params }: { params: Promise<{ id:
       <Player
         type="movie"
         tmdbId={movie.id}
-        startSeconds={prog?.current_time_s ?? 0}
+        startSeconds={startSeconds}
         title={movie.title}
         posterPath={movie.poster_path}
         backdropPath={movie.backdrop_path}

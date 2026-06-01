@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback } from 'react'
+import { getSupabaseBrowser } from '@/lib/supabase/browser'
 
 type Props = {
   type: 'movie' | 'tv'
@@ -29,6 +30,14 @@ export default function Player({
   title, posterPath, backdropPath, episodeTitle,
 }: Props) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hasSessionRef = useRef<boolean | null>(null)
+
+  useEffect(() => {
+    void (async () => {
+      const { data } = await getSupabaseBrowser().auth.getSession()
+      hasSessionRef.current = !!data.session
+    })()
+  }, [])
 
   const src =
     type === 'movie'
@@ -38,6 +47,7 @@ export default function Player({
   const saveProgress = useCallback(
     async (payload: PlayerEventPayload) => {
       if (!payload.duration || payload.duration < 1) return
+      if (!hasSessionRef.current) return
       await fetch('/api/progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
