@@ -3,33 +3,18 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { getSupabaseBrowser } from '@/lib/supabase/browser'
+import { getAllProgress, type ProgressData } from '@/lib/storage'
 import { TMDB_IMAGE_BASE } from '@/lib/tmdb'
 import { Play } from 'lucide-react'
 
-type Row = {
-  id: string
-  media_type: 'movie' | 'tv'
-  tmdb_id: number
-  season: number | null
-  episode: number | null
-  progress: number
-  title: string | null
-  poster_path: string | null
-}
-
 export default function ContinueWatching() {
-  const [items, setItems] = useState<Row[]>([])
+  const [items, setItems] = useState<ProgressData[]>([])
 
   useEffect(() => {
-    getSupabaseBrowser()
-      .from('watch_progress')
-      .select('id, media_type, tmdb_id, season, episode, progress, title, poster_path, updated_at')
-      .gte('progress', 0.05)
-      .lt('progress', 0.95)
-      .order('updated_at', { ascending: false })
-      .limit(10)
-      .then(({ data }: { data: Row[] | null }) => setItems(data ?? []))
+    const all = getAllProgress()
+      .filter(p => p.progress >= 0.05 && p.progress < 0.95)
+      .slice(0, 10)
+    setItems(all)
   }, [])
 
   if (items.length === 0) return null
@@ -38,18 +23,17 @@ export default function ContinueWatching() {
     <section className="px-4 md:px-8 space-y-3">
       <h2 className="text-lg font-semibold text-white">Continue Watching</h2>
       <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-none">
-        {items.map(item => {
+        {items.map((item, i) => {
           const href =
-            item.media_type === 'movie'
-              ? `/watch/movie/${item.tmdb_id}`
-              : `/watch/tv/${item.tmdb_id}/${item.season}/${item.episode}`
-
+            item.mediaType === 'movie'
+              ? `/watch/movie/${item.tmdbId}`
+              : `/watch/tv/${item.tmdbId}/${item.season}/${item.episode}`
           return (
-            <Link key={item.id} href={href} className="snap-start flex-none w-36 md:w-44 group">
+            <Link key={i} href={href} className="snap-start flex-none w-36 md:w-44 group">
               <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-zinc-800">
-                {item.poster_path && (
+                {item.posterPath && (
                   <Image
-                    src={`${TMDB_IMAGE_BASE}/w342${item.poster_path}`}
+                    src={`${TMDB_IMAGE_BASE}/w342${item.posterPath}`}
                     alt={item.title ?? ''}
                     fill
                     className="object-cover"

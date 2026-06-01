@@ -1,14 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
-import { getSupabaseBrowser } from '@/lib/supabase/browser'
+import { useEffect, useRef, useCallback, useState } from 'react'
+import { getWatchProgress, setWatchProgress, progressKey, type ProgressData } from '@/lib/storage'
 
 type Props = {
   type: 'movie' | 'tv'
   tmdbId: number
   season?: number
   episode?: number
-  startSeconds?: number
   title?: string
   posterPath?: string | null
   backdropPath?: string | null
@@ -16,7 +15,6 @@ type Props = {
 }
 
 type PlayerEventPayload = {
-  event: string
   currentTime: number
   duration: number
   progress: number
@@ -26,47 +24,38 @@ const DEBOUNCE_MS = 5000
 const VIDKING_ORIGIN = 'https://www.vidking.net'
 
 export default function Player({
-  type, tmdbId, season, episode, startSeconds = 0,
+  type, tmdbId, season, episode,
   title, posterPath, backdropPath, episodeTitle,
 }: Props) {
+  const key = progressKey(type, tmdbId, season, episode)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const hasSessionRef = useRef<boolean | null>(null)
+  const [startSeconds, setStartSeconds] = useState<number | null>(null)
 
   useEffect(() => {
-    void (async () => {
-      const { data } = await getSupabaseBrowser().auth.getSession()
-      hasSessionRef.current = !!data.session
-    })()
-  }, [])
-
-  const src =
-    type === 'movie'
-      ? `${VIDKING_ORIGIN}/embed/movie/${tmdbId}?color=e50914&autoPlay=true&progress=${startSeconds}`
-      : `${VIDKING_ORIGIN}/embed/tv/${tmdbId}/${season}/${episode}?color=e50914&autoPlay=true&nextEpisode=true&episodeSelector=true&progress=${startSeconds}`
+    const saved = getWatchProgress(key)
+    setStartSeconds(saved?.currentTime ?? 0)
+  }, [key])
 
   const saveProgress = useCallback(
-    async (payload: PlayerEventPayload) => {
+    (payload: PlayerEventPayload) => {
       if (!payload.duration || payload.duration < 1) return
-      if (!hasSessionRef.current) return
-      await fetch('/api/progress', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          media_type: type,
-          tmdb_id: tmdbId,
-          season: season ?? null,
-          episode: episode ?? null,
-          current_time_s: payload.currentTime,
-          duration_s: payload.duration,
-          progress: payload.progress,
-          title,
-          poster_path: posterPath ?? null,
-          backdrop_path: backdropPath ?? null,
-          episode_title: episodeTitle ?? null,
-        }),
-      })
+      const data: ProgressData = {
+        mediaType: type,
+        tmdbId,
+        season: season ?? null,
+        episode: episode ?? null,
+        currentTime: payload.currentTime,
+        duration: payload.duration,
+        progress: payload.progress,
+        updatedAt: new Date().toISOString(),
+        title: title ?? undefined,
+        posterPath: posterPath ?? null,
+        backdropPath: backdropPath ?? null,
+        episodeTitle: episodeTitle ?? null,
+      }
+      setWatchProgress(key, data)
     },
-    [type, tmdbId, season, episode, title, posterPath, backdropPath, episodeTitle]
+    [key, type, tmdbId, season, episode, title, posterPath, backdropPath, episodeTitle]
   )
 
   useEffect(() => {
@@ -75,9 +64,7 @@ export default function Player({
       let msg: { type?: string; data?: PlayerEventPayload & { event?: string } } | null = null
       try { msg = typeof e.data === 'string' ? JSON.parse(e.data) : e.data } catch { return }
       if (!msg || msg.type !== 'PLAYER_EVENT' || !msg.data) return
-
       const { event, ...rest } = msg.data
-
       if (event === 'timeupdate') {
         if (timerRef.current) clearTimeout(timerRef.current)
         timerRef.current = setTimeout(() => saveProgress(rest as PlayerEventPayload), DEBOUNCE_MS)
@@ -86,13 +73,19 @@ export default function Player({
         saveProgress(rest as PlayerEventPayload)
       }
     }
-
     window.addEventListener('message', handleMessage)
     return () => {
       window.removeEventListener('message', handleMessage)
       if (timerRef.current) clearTimeout(timerRef.current)
     }
   }, [saveProgress])
+
+  if (startSeconds === null) return <div className="w-full h-full bg-black" />
+
+  const src =
+    type === 'movie'
+      ? `${VIDKING_ORIGIN}/embed/movie/${tmdbId}?color=e50914&autoPlay=true&progress=${startSeconds}`
+      : `${VIDKING_ORIGIN}/embed/tv/${tmdbId}/${season}/${episode}?color=e50914&autoPlay=true&nextEpisode=true&episodeSelector=true&progress=${startSeconds}`
 
   return (
     <iframe

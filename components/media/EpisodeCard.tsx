@@ -1,8 +1,12 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Episode } from '@/lib/tmdb'
 import { TMDB_IMAGE_BASE } from '@/lib/tmdb'
 import { Play, Clock } from 'lucide-react'
+import { getWatchProgress, progressKey } from '@/lib/storage'
 
 type Props = {
   showId: number
@@ -12,9 +16,16 @@ type Props = {
 }
 
 export default function EpisodeCard({ showId, seasonNum, episode, progress }: Props) {
+  const [localProgress, setLocalProgress] = useState(progress)
+
+  useEffect(() => {
+    const saved = getWatchProgress(progressKey('tv', showId, seasonNum, episode.episode_number))
+    if (saved) setLocalProgress(saved.progress)
+  }, [showId, seasonNum, episode.episode_number])
+
   const href = `/watch/tv/${showId}/${seasonNum}/${episode.episode_number}`
   const thumb = episode.still_path ? `${TMDB_IMAGE_BASE}/w300${episode.still_path}` : null
-  const showBar = progress > 0.04 && progress < 0.96
+  const showBar = localProgress > 0.04 && localProgress < 0.96
 
   return (
     <Link
@@ -31,7 +42,7 @@ export default function EpisodeCard({ showId, seasonNum, episode, progress }: Pr
         )}
         {showBar && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-zinc-700">
-            <div className="h-full bg-brand" style={{ width: `${progress * 100}%` }} />
+            <div className="h-full bg-brand" style={{ width: `${localProgress * 100}%` }} />
           </div>
         )}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/50 transition-opacity">

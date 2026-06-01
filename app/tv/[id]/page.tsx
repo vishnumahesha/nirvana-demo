@@ -3,23 +3,22 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getTVDetails, getTVSeason, TMDB_IMAGE_BASE } from '@/lib/tmdb'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Play, Star } from 'lucide-react'
+import WatchlistButton from '@/components/media/WatchlistButton'
+import EpisodeCard from '@/components/media/EpisodeCard'
+import SeasonSelector from '@/components/tv/SeasonSelector'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
   try {
     const show = await getTVDetails(Number(id))
-    return { title: `${show.name} — Mirage` }
+    return { title: `${show.name} — Mirawatch` }
   } catch {
-    return { title: 'Mirage' }
+    return { title: 'Mirawatch' }
   }
 }
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Play, Star } from 'lucide-react'
-import { createClient } from '@/lib/supabase/server'
-import WatchlistButton from '@/components/media/WatchlistButton'
-import EpisodeCard from '@/components/media/EpisodeCard'
-import SeasonSelector from '@/components/tv/SeasonSelector'
 
 export default async function TVPage({
   params,
@@ -38,32 +37,6 @@ export default async function TVPage({
 
   let seasonData
   try { seasonData = await getTVSeason(Number(id), seasonNum) } catch { notFound() }
-
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  const progressMap: Record<number, number> = {}
-  let inWatchlist = false
-  if (user) {
-    const [{ data: rows }, { data: wl }] = await Promise.all([
-      supabase
-        .from('watch_progress')
-        .select('episode, progress')
-        .eq('user_id', user.id)
-        .eq('media_type', 'tv')
-        .eq('tmdb_id', show.id)
-        .eq('season', seasonNum),
-      supabase
-        .from('watchlist')
-        .select('tmdb_id')
-        .eq('user_id', user.id)
-        .eq('tmdb_id', show.id)
-        .eq('media_type', 'tv')
-        .maybeSingle(),
-    ])
-    rows?.forEach(r => { if (r.episode != null) progressMap[r.episode] = r.progress })
-    inWatchlist = !!wl
-  }
 
   const backdrop = show.backdrop_path ? `${TMDB_IMAGE_BASE}/original${show.backdrop_path}` : null
   const poster = show.poster_path ? `${TMDB_IMAGE_BASE}/w500${show.poster_path}` : null
@@ -115,8 +88,6 @@ export default async function TVPage({
                 tmdbId={show.id}
                 title={show.name}
                 posterPath={show.poster_path}
-                initialInWatchlist={inWatchlist}
-                hasSession={!!user}
               />
             </div>
           </div>
@@ -132,7 +103,7 @@ export default async function TVPage({
                 showId={show.id}
                 seasonNum={seasonNum}
                 episode={ep}
-                progress={progressMap[ep.episode_number] ?? 0}
+                progress={0}
               />
             ))}
           </div>

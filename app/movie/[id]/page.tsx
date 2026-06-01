@@ -3,42 +3,26 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getMovieDetails, TMDB_IMAGE_BASE } from '@/lib/tmdb'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Play, Star, Clock } from 'lucide-react'
+import WatchlistButton from '@/components/media/WatchlistButton'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
   try {
     const movie = await getMovieDetails(Number(id))
-    return { title: `${movie.title} — Mirage` }
+    return { title: `${movie.title} — Mirawatch` }
   } catch {
-    return { title: 'Mirage' }
+    return { title: 'Mirawatch' }
   }
 }
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Play, Star, Clock } from 'lucide-react'
-import { createClient } from '@/lib/supabase/server'
-import WatchlistButton from '@/components/media/WatchlistButton'
 
 export default async function MoviePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
 
   let movie
   try { movie = await getMovieDetails(Number(id)) } catch { notFound() }
-
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  let inWatchlist = false
-  if (user) {
-    const { data } = await supabase
-      .from('watchlist')
-      .select('tmdb_id')
-      .eq('user_id', user.id)
-      .eq('tmdb_id', movie.id)
-      .eq('media_type', 'movie')
-      .maybeSingle()
-    inWatchlist = !!data
-  }
 
   const backdrop = movie.backdrop_path ? `${TMDB_IMAGE_BASE}/original${movie.backdrop_path}` : null
   const poster = movie.poster_path ? `${TMDB_IMAGE_BASE}/w500${movie.poster_path}` : null
@@ -95,8 +79,6 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
                 tmdbId={movie.id}
                 title={movie.title}
                 posterPath={movie.poster_path}
-                initialInWatchlist={inWatchlist}
-                hasSession={!!user}
               />
             </div>
           </div>
