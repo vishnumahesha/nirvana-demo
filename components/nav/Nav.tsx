@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Search } from 'lucide-react'
+import { Search, ShieldOff } from 'lucide-react'
 
 export default function Nav() {
   return (
@@ -18,6 +18,9 @@ export default function Nav() {
           </nav>
         </div>
         <div className="flex items-center gap-4">
+          <Link href="/adblock" className="text-gray-400 hover:text-white transition-colors" title="Block ads">
+            <ShieldOff className="w-5 h-5" />
+          </Link>
           <Link href="/search" className="text-gray-400 hover:text-white transition-colors">
             <Search className="w-5 h-5" />
           </Link>

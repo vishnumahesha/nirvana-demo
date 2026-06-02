@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getMovieDetails } from '@/lib/tmdb'
 import Player from '@/components/player/Player'
+import AdblockBanner from '@/components/AdblockBanner'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
@@ -11,7 +12,9 @@ export default async function WatchMoviePage({ params }: { params: Promise<{ id:
   try { movie = await getMovieDetails(Number(id)) } catch { notFound() }
 
   return (
-    <div className="fixed inset-0 bg-black z-50">
+    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+      <AdblockBanner />
+      <div className="relative flex-1">
       <Link
         href={`/movie/${id}`}
         className="absolute top-4 left-4 z-10 flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm"
@@ -26,6 +29,7 @@ export default async function WatchMoviePage({ params }: { params: Promise<{ id:
         backdropPath={movie.backdrop_path}
         backHref={`/movie/${id}`}
       />
+      </div>
     </div>
   )
 }
