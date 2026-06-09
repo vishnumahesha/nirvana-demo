@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback, useState } from 'react'
-import Link from 'next/link'
-import { AlertCircle, RefreshCw } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { getWatchProgress, setWatchProgress, progressKey, type ProgressData } from '@/lib/storage'
 import { vidkingUrl, vidsrcUrl, SOURCE_LABELS, type Source } from '@/lib/streams'
 
@@ -26,42 +25,22 @@ type PlayerEventPayload = {
 
 const DEBOUNCE_MS = 5000
 const VIDKING_ORIGIN = 'https://www.vidking.net'
-const PLAYBACK_TIMEOUT_MS = 10_000
 
 export default function Player({
   type, tmdbId, season, episode,
   title, posterPath, backdropPath, episodeTitle,
-  backHref,
 }: Props) {
   const key = progressKey(type, tmdbId, season, episode)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [startSeconds, setStartSeconds] = useState<number | null>(null)
   const [source, setSource] = useState<Source>('vidking')
-  const [failed, setFailed] = useState(false)
-  const [playbackStarted, setPlaybackStarted] = useState(false)
 
   // Read resume position from localStorage
   useEffect(() => {
     const saved = getWatchProgress(key)
     setStartSeconds(saved?.currentTime ?? 0)
   }, [key])
-
-  // Reset failure state when source changes
-  useEffect(() => {
-    setFailed(false)
-    setPlaybackStarted(false)
-  }, [source])
-
-  // 10-second timeout — if no play/timeupdate arrives, show error
-  useEffect(() => {
-    if (startSeconds === null || playbackStarted) return
-    timeoutRef.current = setTimeout(() => setFailed(true), PLAYBACK_TIMEOUT_MS)
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    }
-  }, [startSeconds, source, playbackStarted])
 
   const saveProgress = useCallback(
     (payload: PlayerEventPayload) => {
@@ -94,12 +73,6 @@ export default function Player({
 
       const { event, ...rest } = msg.data
 
-      if (event === 'play' || event === 'timeupdate') {
-        // Clear the failure timeout — player is alive
-        if (timeoutRef.current) clearTimeout(timeoutRef.current)
-        if (!playbackStarted) setPlaybackStarted(true)
-      }
-
       if (event === 'timeupdate') {
         if (timerRef.current) clearTimeout(timerRef.current)
         timerRef.current = setTimeout(() => saveProgress(rest as PlayerEventPayload), DEBOUNCE_MS)
@@ -114,7 +87,7 @@ export default function Player({
       window.removeEventListener('message', handleMessage)
       if (timerRef.current) clearTimeout(timerRef.current)
     }
-  }, [saveProgress, playbackStarted])
+  }, [saveProgress])
 
   if (startSeconds === null) return <div className="w-full h-full bg-black" />
 
@@ -123,38 +96,6 @@ export default function Player({
     : vidsrcUrl(type, tmdbId, season, episode)
 
   const otherSource: Source = source === 'vidking' ? 'vidsrc' : 'vidking'
-
-  if (failed) {
-    return (
-      <div className="w-full h-full bg-black flex items-center justify-center px-4">
-        <div className="max-w-md text-center space-y-5">
-          <AlertCircle className="w-12 h-12 text-zinc-500 mx-auto" />
-          <p className="text-white text-base leading-relaxed">
-            This title isn&apos;t available to stream right now. It may be added
-            soon — try again later, or check back when it&apos;s been released for
-            a few weeks.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => setSource(otherSource)}
-              className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-sm transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Try {SOURCE_LABELS[otherSource]}
-            </button>
-            {backHref && (
-              <Link
-                href={backHref}
-                className="px-4 py-2 rounded-lg border border-white/20 hover:bg-white/10 text-white text-sm transition-colors text-center"
-              >
-                Back to Detail
-              </Link>
-            )}
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -168,8 +109,9 @@ export default function Player({
       <div className="flex justify-center py-2 bg-black">
         <button
           onClick={() => setSource(otherSource)}
-          className="text-xs text-gray-500 hover:text-gray-300 transition-colors px-3 py-1 rounded hover:bg-white/5"
+          className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors px-3 py-1 rounded hover:bg-white/5"
         >
+          <RefreshCw className="w-3.5 h-3.5" />
           Try {SOURCE_LABELS[otherSource]}
         </button>
       </div>
