@@ -10,6 +10,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    // When deployed as the standalone nirvana-demo project, redirect root to the demo page
+    if (process.env.VERCEL_PROJECT_NAME === 'nirvana-demo') {
+      return [{ source: '/', destination: '/nirvana', permanent: false }]
+    }
+    return []
+  },
 }
 
 export default nextConfig

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import Script from 'next/script'
 import './globals.css'
 import Nav from '@/components/nav/Nav'
 
@@ -21,11 +20,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} bg-background text-white antialiased min-h-screen`}>
         <Nav />
         {children}
-        <Script
-          src="https://unpkg.com/@elevenlabs/convai-widget-embed"
-          strategy="afterInteractive"
-          type="text/javascript"
-        />
       </body>
     </html>
   )
