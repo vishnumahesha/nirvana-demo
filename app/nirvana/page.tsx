@@ -14,6 +14,7 @@ import Guarantee from './_components/Guarantee'
 import FAQ from './_components/FAQ'
 import SiteFooter from './_components/SiteFooter'
 import ElevenLabsWidget from './_components/ElevenLabsWidget'
+import PhoneCTA from './_components/PhoneCTA'
 
 const sora = Sora({
   subsets: ['latin'],
@@ -53,6 +54,7 @@ export default function NirvanaPage() {
       {/* Offset for fixed demo banner (28px) + fixed nav (64px) */}
       <main className="pt-[92px]">
         <Hero />
+        <PhoneCTA />
         <TechTabs />
         <PerformanceCards />
         <FlagshipProducts />
