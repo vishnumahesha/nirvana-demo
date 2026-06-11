@@ -76,7 +76,26 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div className="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
+        {/* Support line */}
+        <div className="border-t border-slate-800 pt-8 pb-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-sm text-slate-400">
+            Need customer support?{' '}
+            <a
+              href="tel:+18339977785"
+              className="text-white font-semibold hover:text-blue-400 transition-colors"
+            >
+              +1 (833) 997-7785
+            </a>
+          </p>
+          <div className="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-800 px-3 py-1.5 rounded-full">
+            <svg width="10" height="10" viewBox="0 0 20 20" fill="#4b5563">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            Demo line — trial message may play first
+          </div>
+        </div>
+
+        <div className="border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
           <p>&copy; 2024 Nirvana Systems. All rights reserved.</p>
           <p>OmniFunds is a licensed software product, not an investment advisor.</p>
         </div>

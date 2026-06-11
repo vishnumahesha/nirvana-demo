@@ -8,7 +8,7 @@ export default function ElevenLabsWidget() {
     <div
       dangerouslySetInnerHTML={{
         __html:
-          '<elevenlabs-convai agent-id="agent_5601ktsnn8vpf7esn50ynngxpach"></elevenlabs-convai>',
+          '<elevenlabs-convai agent-id="agent_9501ktw5k4bzfc9r1k13nh3e34yq"></elevenlabs-convai>',
       }}
     />
   )
