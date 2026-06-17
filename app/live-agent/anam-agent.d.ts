@@ -13,6 +13,7 @@ declare module 'react' {
         'agent-id'?: string
         layout?: string
         'ui-text-input'?: string
+        'call-to-action'?: string
       }
     }
   }

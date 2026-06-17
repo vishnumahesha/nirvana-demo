@@ -39,18 +39,16 @@ export default function SiteNav() {
                 {item}
               </a>
             ))}
+            <a
+              href="/live-agent"
+              className="hover:text-[#1D4ED8] transition-colors"
+            >
+              Live Agent
+            </a>
           </nav>
 
           {/* CTA */}
           <div className="flex items-center gap-3">
-            <a
-              href="/live-agent"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-2 border border-[#1D4ED8] text-[#1D4ED8] hover:bg-[#eff6ff] text-sm font-medium px-5 py-2.5 rounded-full transition-colors"
-            >
-              Talk to our AI agent
-            </a>
             <a
               href="#demo"
               className="hidden sm:inline-flex items-center gap-2 bg-[#1D4ED8] hover:bg-[#1e40af] text-white text-sm font-medium px-5 py-2.5 rounded-full transition-colors"
@@ -82,10 +80,9 @@ export default function SiteNav() {
               </a>
             ))}
             <a href="/live-agent"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex justify-center items-center border border-[#1D4ED8] text-[#1D4ED8] text-sm font-medium px-5 py-2.5 rounded-full transition-colors">
-              Talk to our AI agent
+              className="text-slate-600 hover:text-[#1D4ED8] text-sm transition-colors"
+              onClick={() => setMobileOpen(false)}>
+              Live Agent
             </a>
             <a href="#demo"
               className="inline-flex justify-center items-center bg-[#1D4ED8] text-white text-sm font-medium px-5 py-2.5 rounded-full transition-colors">
