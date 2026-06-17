@@ -19,14 +19,9 @@ export default function LiveAgentPage() {
         &larr; Back to site
       </a>
 
-      {/* Parent needs explicit width/height — the inline widget fills it. */}
+      {/* Default Anam embed — the widget manages its own layout. */}
       <div className="fixed inset-0 z-[100] h-[100dvh] w-screen bg-black">
-        <anam-agent
-          agent-id="31088c6e-11e9-42a3-8fa5-63adec1fc579"
-          layout="inline"
-          ui-text-input="true"
-          call-to-action="Start a call"
-        ></anam-agent>
+        <anam-agent agent-id="31088c6e-11e9-42a3-8fa5-63adec1fc579"></anam-agent>
       </div>
     </>
   )
