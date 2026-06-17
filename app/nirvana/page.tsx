@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import { Sora, Fraunces } from 'next/font/google'
 
 import SiteNav from './_components/SiteNav'
@@ -30,20 +29,8 @@ const fraunces = Fraunces({
 })
 
 export default function NirvanaPage() {
-  // Hide the Mirawatch nav for this demo page
-  useEffect(() => {
-    const style = document.createElement('style')
-    style.id = 'nirvana-override'
-    style.textContent = `
-      body > header,
-      header.fixed { display: none !important; }
-    `
-    document.head.appendChild(style)
-    return () => {
-      document.getElementById('nirvana-override')?.remove()
-    }
-  }, [])
-
+  // The global Mirawatch <Nav> hides itself on /nirvana (see Nav.tsx),
+  // so this page shows only its own SiteNav chrome.
   return (
     <div
       className={`${sora.variable} ${fraunces.variable} bg-white text-slate-900 antialiased`}

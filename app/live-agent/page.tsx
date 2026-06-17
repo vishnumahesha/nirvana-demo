@@ -1,21 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
 import Script from 'next/script'
 
 export default function LiveAgentPage() {
-  // This route inherits the global Mirawatch <Nav /> from the root layout.
-  // Hide it so the agent renders truly full-bleed with no shared chrome.
-  useEffect(() => {
-    const style = document.createElement('style')
-    style.id = 'live-agent-override'
-    style.textContent = `header.fixed { display: none !important; }`
-    document.head.appendChild(style)
-    return () => {
-      document.getElementById('live-agent-override')?.remove()
-    }
-  }, [])
-
+  // The global Mirawatch <Nav> already hides itself on /live-agent (see Nav.tsx),
+  // so this page renders truly full-bleed with no shared chrome.
   return (
     <>
       <Script
